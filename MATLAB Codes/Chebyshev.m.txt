@@ -1,0 +1,19 @@
+clc;
+clear all;
+close all;
+kp=-3.01;
+os=4.82;%omega s
+ks=-15;
+op=2; %omega p
+opd=op/op;
+osd=os/op;
+N1=log((10^(-0.1*kp)-1)/(10^(-0.1*ks)-1))
+N2=2*log(opd/osd)
+N=N1/N2
+for k=0:1
+    tk= (pi/2)+((pi*k)/2)+(pi/(2*N))
+    poles(k+1)=cos(tk)+1j*sin(tk)
+end
+z=[];
+
+Hs=zpk(z,poles,k)

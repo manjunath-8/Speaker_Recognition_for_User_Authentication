@@ -1,0 +1,39 @@
+% Assuming you have an STFT signal 'stft_signal' and the parameters
+numFilters = 20; % Number of Mel filters
+numFFTPoints = 512; % Number of FFT points
+fs = 44100; % Sampling frequency
+
+% Create Mel filter bank
+meFilterBank = melFilterBank(fs, numFFTPoints, numFilters);
+
+% Apply the Mel filter bank to the STFT signal
+filteredSignals = applyMelFilterBank(stft_signal, melFilterBank);
+
+% Define functions to create Mel filter bank and apply it
+function filters = melFilterBank(fs, nfft, numFilters)
+    % Create Mel filter bank
+    fmax = fs / 2;
+    melmax = 2595 * log10(1 + fmax / 700); % Maximum Mel frequency
+    melPoints = linspace(0, melmax, numFilters + 2); % Equally spaced Mel points
+    freqPoints = 700 * (10.^(melPoints / 2595) - 1); % Convert Mel points to frequencies
+
+    % Convert frequencies to FFT bins
+    fftBins = floor((nfft + 1) * freqPoints / fs);
+
+    filters = zeros(numFilters, nfft / 2 + 1);
+
+    for m = 2:numFilters+1
+        filters(m-1, fftBins(m-1):fftBins(m)) = (fftBins(m) - (1:fftBins(m) - fftBins(m-1))) / (fftBins(m) - fftBins(m-1));
+        filters(m-1, fftBins(m):fftBins(m+1)) = (fftBins(m+1) - fftBins(m)) / (fftBins(m+1) - fftBins(m));
+    end
+end
+%% 
+
+function filteredSignals = applyMelFilterBank(stftSignal, filterBank)
+    numFilters = size(filterBank, 1);
+    filteredSignals = cell(1, numFilters);
+
+    for i = 1:numFilters
+        filteredSignals{i} = stftSignal .* filterBank(i, :);
+    end
+end

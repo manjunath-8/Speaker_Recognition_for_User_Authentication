@@ -1,0 +1,126 @@
+clc;
+clear all;
+% Read the .wav file
+[inputSignal, Fs] = audioread('Goutami.wav');
+T = 1 / Fs;             % Sampling period
+t = 0:T:1;              % Time vector
+
+% Plot the original and filtered signals
+time = (0:length(inputSignal)-1) / Fs;
+figure;
+plot(time, inputSignal);
+title('Original Signal');
+
+% Define filter specifications
+cutoffFrequency = 3000;  % Set your desired cutoff frequency in Hz
+[h,t] = myOrder();  % Choose the filter order (adjust as needed)
+%y_n=conv(h_n,inputSignal);
+% Design Butterworth filter without using inbuilt function
+% Apply the filter to the signal using a direct form II transposed structure
+display(length(inputSignal));
+display(length(h));
+filteredSignal = conv(inputSignal,h);
+
+
+% fft
+N = length( inputSignal);
+frequencies = (-N/2:N/2-1)*(Fs/N); % Frequency axis for plotting
+fft_result = fft(inputSignal);
+fft_result=fftshift(fft_result);
+
+% Calculate the single-sided amplitude spectrum
+amplitude_spectrum = abs(fft_result / N);
+
+% Plot the frequency-domain representation
+subplot(2,1,1);
+plot(frequencies, amplitude_spectrum);
+title('Frequency Domain Signal');
+xlabel('Frequency (Hz)');
+ylabel('Amplitude');
+
+% Perform FFT
+N = length(filteredSignal);     % Number of samples
+frequencies = (-N/2:N/2-1)*(Fs/N); % Frequency axis for plotting
+filtered_fft_result = fft(filteredSignal);
+filtered_fft_result=fftshift(filtered_fft_result);
+
+% Calculate the single-sided amplitude spectrum
+filtered_amplitude_spectrum = abs(filtered_fft_result / N);
+
+% Plot the frequency-domain representation
+subplot(2,1,2);
+plot(frequencies, filtered_amplitude_spectrum);
+title('Filtered Frequency Domain Signal');
+xlabel('Frequency (Hz)');
+ylabel('Amplitude');
+
+% Optionally, you can play the original and filtered signals
+% sound(inputSignal, Fs);
+% sound(filteredSignal, Fs);
+
+
+%% 
+% *ORDER*
+
+function [h,t] = myOrder()
+Kp=-3
+Ks=-20
+Fp=3000
+Fs=3900
+Omega_p=2*pi*Fp
+Omega_s=2*pi*Fs
+Sampling_Time=(1/(24*10^3))
+%Digital Low pass filter specifications
+%%
+Wp=Omega_p*Sampling_Time
+Ws=Omega_s*Sampling_Time
+
+%%Prewarp the band edge frequencies using T=1 sec,
+%%
+T=1;
+Omega_p_new=(2/T)*tan(Wp/2)
+Omega_s_new=(2/T)*tan(Ws/2)
+%% Order of Butterworth  low pass filter 
+%%
+
+N=ceil((log10((10^(-0.1 * Kp) - 1) / (10^(-0.1 * Ks) - 1))) / (2 * log10(Omega_p_new / Omega_s_new)))
+
+%%Poles of the normalized lowpass Butterworth filter
+%%
+for k=1:N
+    theta(k)=(k-1*pi/2)+(pi*2)+(pi/2)
+   s(k) = cos(theta(k)) + 1i*sin(theta(k))
+
+end
+gain=1
+zeros = [];
+poles = [s];
+poles= real(poles(real(poles) < 0))
+
+Transfer_function = zpk(zeros,poles,gain)     %h(s)
+
+
+%% Cutoff frequency
+%%
+cutoff_frequency=Omega_p_new / ((10^(-0.1 * Kp)) - 1)^(1/(2 * N))
+
+%% Digital  filter transfer function
+%
+ SYSD = c2d(Transfer_function,Sampling_Time,'impulse')   %h(z)
+
+% Assuming t_rf_d is a discrete-time transfer function
+syms h t
+
+% Extract coefficients directly from the transfer function
+[numerator, denominator] = tfdata(SYSD, 'v')
+
+% Create the Z-domain transfer function
+H_z = tf2zpk(numerator, denominator);
+
+% Perform the inverse Z-transform
+[h,t] = impz(numerator,denominator);
+
+% Display the result
+disp('Inverse Z-transform of the discrete-time transfer function:');
+
+end

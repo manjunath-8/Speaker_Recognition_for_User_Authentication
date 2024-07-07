@@ -1,0 +1,52 @@
+% Read the speech signal (replace 'your_speech_file.wav' with your file)
+speech = audioread('Anusha.wav');
+
+% Parameters
+window_size = 256;
+overlap_ratio = 0.75;
+fs = 44100; % Replace with your actual sampling frequency
+
+% Create a window function (e.g., Hamming window)
+window = hamming(window_size);
+
+% Calculate the overlap size
+overlap_size = floor(overlap_ratio * window_size);
+
+% Apply window to the signal with overlap
+num_segments = floor((length(speech) - overlap_size) / (window_size - overlap_size));
+stft_result = zeros(window_size, num_segments);
+
+for i = 1:num_segments
+    start_index = (i - 1) * (window_size - overlap_size) + 1;
+    end_index = start_index + window_size - 1;
+    segment = speech(start_index:end_index);
+    windowed_segment = segment .* window;
+    stft_result(:, i) = fft(windowed_segment, window_size);
+end
+
+% Convert to spectrogram
+spectrogram = abs(stft_result);
+
+% Time and frequency vectors
+T = (1:num_segments) * (window_size - overlap_size) / fs;
+F = linspace(0, fs/2, window_size);
+
+% Plot the spectrogram
+figure;
+subplot(2, 1, 1);
+imagesc(T, F, 10*log10(spectrogram));
+axis xy;
+xlabel('Time (s)');
+ylabel('Frequency (Hz)');
+title('Speech Signal Spectrogram');
+colorbar;
+
+% Spectrum function
+spectrum_result = mean(spectrogram, 2);  % Average across time
+
+% Plot the spectrum
+subplot(2, 1, 2);
+plot(F, 10*log10(spectrum_result));
+xlabel('Frequency (Hz)');
+ylabel('Magnitude (dB)');
+title('Average Spectrum');

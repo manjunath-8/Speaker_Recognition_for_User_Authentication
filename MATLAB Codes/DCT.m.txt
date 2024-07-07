@@ -1,0 +1,24 @@
+% Read the speech signal (replace 'your_speech_file.wav' with your file)
+speech = audioread('Goutami.wav');
+
+% Parameters
+block_size = 256; % Size of the block for DCT
+
+% Apply DCT to the speech signal
+num_blocks = floor(length(speech) / block_size);
+dct_result = zeros(block_size, num_blocks);
+
+for i = 1:num_blocks
+    start_index = (i - 1) * block_size + 1;
+    end_index = start_index + block_size - 1;
+    block = speech(start_index:end_index);
+    dct_result(:, i) = dct(block);
+end
+
+% Visualize the DCT coefficients
+figure;
+imagesc(1:num_blocks, 1:block_size, log(abs(dct_result) + 1));
+xlabel('Block Index');
+ylabel('DCT Coefficient Index');
+title('DCT Coefficients of Speech Signal');
+colorbar;

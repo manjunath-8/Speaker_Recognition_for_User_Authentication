@@ -8,7 +8,8 @@ especially useful in places where super tight security is essential. It's our wa
 ## Repository Structure
 ### Matlab Codes
 The Matlab codes that are designed to implement and evaluate the voice recognition system using Mel-Frequency Cepstral Coefficients (MFCC) and Dynamic Time Warping (DTW) techniques.
-see the [LICENSE](LICENSE) file for details.
+See the [Speaker Recognition for User Authentication.pdf](Speaker%20Recognition%20for%20User%20Authentication.pdf) file for details.
+- **License**: This project is licensed under the MIT License - see the LICENSE file for details.
 ### Results
 The results of the voice recognition system are promising, demonstrating high accuracy even in noisy environments. Key findings include:
 
